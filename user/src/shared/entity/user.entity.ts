@@ -1,13 +1,20 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Role } from '../enum/role.enum';
 
-@Entity('config')
-export class UserEntity {
+@Entity('user')
+export class UserEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
-  key: string;
+  @Column({ unique: true, nullable: false })
+  username: string;
 
-  @Column('text')
-  value: string;
+  @Column({ nullable: false })
+  password: string;
+
+  @Column({ nullable: false, default: 'user' })
+  name: string;
+
+  @Column({ type: 'enum', enum: Role, default: Role.USER })
+  role: Role;
 }
