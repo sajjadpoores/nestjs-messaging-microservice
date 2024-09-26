@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
+import { TypeOrmConfigService } from './config/typeorm/typeorm.config';
 
 @Module({
   imports: [
@@ -12,6 +14,7 @@ import { join } from 'path';
       ),
       isGlobal: true,
     }),
+    TypeOrmModule.forRootAsync({ useClass: TypeOrmConfigService }),
   ],
   controllers: [],
   providers: [],
