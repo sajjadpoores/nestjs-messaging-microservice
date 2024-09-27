@@ -43,6 +43,21 @@ export class RequestService {
     }
   }
 
+  async put(url: string, body: any): Promise<AxiosResponse<any>> {
+    try {
+      this.logger.log(
+        `Sending PUT request to ${url} with body: ${JSON.stringify(body)}`,
+      );
+      const response = await firstValueFrom(this.httpService.put(url, body));
+      this.logger.log(
+        `Response received from ${url}: ${JSON.stringify(response.data)}`,
+      );
+      return response.data;
+    } catch (error) {
+      this._handleError(error, url);
+    }
+  }
+
   private _handleError(error: any, url: string): never {
     this.logger.error(`Failed request to ${url}: ${error.message}`);
 
