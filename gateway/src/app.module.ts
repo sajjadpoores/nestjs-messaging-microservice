@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { join } from 'path';
 import { AuthModule } from './modules/auth/auth.module';
 import { RequestModule } from './modules/request/request.module';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { RequestModule } from './modules/request/request.module';
     }),
     AuthModule,
     RequestModule,
+    UserModule,
   ],
   controllers: [],
   providers: [],
