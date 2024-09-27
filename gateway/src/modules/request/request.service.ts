@@ -2,6 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable, HttpException, Logger } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { AxiosResponse } from 'axios';
+import * as FormData from 'form-data';
 
 @Injectable()
 export class RequestService {
@@ -23,6 +24,26 @@ export class RequestService {
       if (error.response) {
         this._handleError(error, url);
       }
+    }
+  }
+  async postFormData(
+    url: string,
+    formData: FormData,
+  ): Promise<AxiosResponse<any>> {
+    try {
+      this.logger.log(
+        `Sending POST request to ${url} with form data: ${JSON.stringify(formData)}`,
+      );
+      const headers = formData.getHeaders();
+      const response = await firstValueFrom(
+        this.httpService.post(url, formData, { headers }),
+      );
+      this.logger.log(
+        `Response received from ${url}: ${JSON.stringify(response.data)}`,
+      );
+      return response.data;
+    } catch (error) {
+      this._handleError(error, url);
     }
   }
 

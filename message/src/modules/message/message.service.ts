@@ -11,7 +11,7 @@ import { MessageRepository } from 'src/shared/repository/message.repository';
 import { FileEntity } from 'src/shared/entity/file.entity';
 import { FileRepository } from 'src/shared/repository/file.repository';
 import { PaginationQueryDto } from 'src/shared/dto/pagination-query.dto';
-import { GetMessagesQueryBody } from './dto/get-messages-query.dto';
+import { GetMessagesParamDto } from './dto/get-messages-param.dto';
 
 @Injectable()
 export class MessageService {
@@ -49,7 +49,7 @@ export class MessageService {
 
   async getChatMessages(
     query: PaginationQueryDto,
-    param: GetMessagesQueryBody,
+    param: GetMessagesParamDto,
   ): Promise<{ data: MessageEntity[]; total: number }> {
     const { sender, receiver } = param;
     const { page, limit } = query;

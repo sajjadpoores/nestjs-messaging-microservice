@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, IsOptional } from 'class-validator';
 
-export class GetMessagesQueryBody {
+export class CreateMessageBodyDto {
   @ApiProperty({ description: 'ID of the sender', example: 1 })
   @IsNotEmpty()
   @IsNumber()
@@ -11,4 +11,9 @@ export class GetMessagesQueryBody {
   @IsNotEmpty()
   @IsNumber()
   receiver: number;
+
+  @ApiProperty({ description: 'Message text', example: 'Hello!' })
+  @IsOptional()
+  @IsString()
+  text: string;
 }
