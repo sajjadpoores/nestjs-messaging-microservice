@@ -39,7 +39,7 @@ export class UserService {
     }
 
     try {
-      await user.save();
+      await this.userRepository.save(user);
     } catch (error) {
       if (
         error instanceof QueryFailedError &&
