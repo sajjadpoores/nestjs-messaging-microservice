@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { join } from 'path';
+import { AuthModule } from './modules/auth/auth.module';
+import { RequestModule } from './modules/request/request.module';
 
 @Module({
   imports: [
@@ -12,6 +14,8 @@ import { join } from 'path';
       ),
       isGlobal: true,
     }),
+    AuthModule,
+    RequestModule,
   ],
   controllers: [],
   providers: [],
