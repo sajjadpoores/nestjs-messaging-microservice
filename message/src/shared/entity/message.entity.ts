@@ -17,7 +17,7 @@ export class MessageEntity extends BaseCustomEntity {
   sender: number;
 
   @Column({ type: 'int', nullable: false })
-  reciever: number;
+  receiver: number;
 
   @Column({ type: 'varchar', nullable: true })
   text: string;

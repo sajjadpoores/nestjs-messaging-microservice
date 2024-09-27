@@ -24,17 +24,17 @@ export class MessageService {
     createMessageDto: CreateMessageBodyDto,
     files: Array<Express.Multer.File>,
   ): Promise<MessageEntity> {
-    const { sender, reciever, text } = createMessageDto;
+    const { sender, receiver, text } = createMessageDto;
 
     // Generate a consistent encryption key based on the sender and receiver
-    const key = this._generateEncryptionKey(sender, reciever);
+    const key = this._generateEncryptionKey(sender, receiver);
     const iv = randomBytes(16);
 
     let encryptedText = this._encryptMessage(key, iv, text);
 
     const message = this.messageRepository.create({
       sender,
-      reciever,
+      receiver,
       text: encryptedText,
       iv: iv.toString('hex'),
     });
@@ -51,28 +51,23 @@ export class MessageService {
     query: PaginationQueryDto,
     param: GetMessagesQueryBody,
   ): Promise<{ data: MessageEntity[]; total: number }> {
-    const { sender, reciever } = param;
+    const { sender, receiver } = param;
     const { page, limit } = query;
 
     const skip = (page - 1) * limit;
-    const [data, total] = await this.messageRepository.findAndCount({
-      where: [
-        { sender, reciever },
-        { sender: reciever, reciever: sender },
-      ],
-      order: {
-        createdAt: 'DESC',
-      },
+    const [data, total] = await this.messageRepository.getMessages(
+      sender,
+      receiver,
       skip,
-      take: limit,
-    });
+      limit,
+    );
 
     const decryptedData = data.map((message) => {
       const decryptedText = this._decryptMessage(
         message.text,
         message.iv,
         message.sender,
-        message.reciever,
+        message.receiver,
       );
       return {
         ...message,

@@ -10,5 +10,5 @@ export class GetMessagesQueryBody {
   @ApiProperty({ description: 'ID of the receiver', example: 2 })
   @IsNotEmpty()
   @IsNumber()
-  reciever: number;
+  receiver: number;
 }
