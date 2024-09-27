@@ -17,7 +17,7 @@ export class MessageEntity extends BaseCustomEntity {
   sender: number;
 
   @Column({ type: 'int', nullable: false })
-  receiver: number;
+  reciever: number;
 
   @Column({ type: 'varchar', nullable: true })
   text: string;
@@ -29,4 +29,7 @@ export class MessageEntity extends BaseCustomEntity {
     inverseJoinColumn: { name: 'fileId', referencedColumnName: 'id' },
   })
   files: FileEntity[];
+
+  @Column({ type: 'varchar', nullable: false })
+  iv: string;
 }
