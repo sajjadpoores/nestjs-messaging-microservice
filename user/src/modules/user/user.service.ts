@@ -1,7 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { UserRepository } from 'src/shared/repository/user.repository';
 import { UpdateUserBodyDto } from './dto/update-user-body.dto';
 import * as bcrypt from 'bcrypt';
+import { QueryFailedError } from 'typeorm';
 
 @Injectable()
 export class UserService {
@@ -33,7 +38,19 @@ export class UserService {
       user.password = password;
     }
 
-    await user.save();
-    return { message: 'User updated successfully', user };
+    try {
+      await user.save();
+    } catch (error) {
+      if (
+        error instanceof QueryFailedError &&
+        error.message.includes('duplicate key value violates unique constraint')
+      ) {
+        throw new ConflictException(
+          'Username already exists. Please choose a different username.',
+        );
+      }
+      throw error;
+    }
+    return { message: 'User updated successfully' };
   }
 }
