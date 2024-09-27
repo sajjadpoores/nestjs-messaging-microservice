@@ -21,27 +21,49 @@ export class RequestService {
       return response.data;
     } catch (error) {
       if (error.response) {
-        const { status, data } = error.response;
-        this.logger.error(
-          `Response error: ${status}, Data: ${JSON.stringify(data)}`,
-        );
-        throw new HttpException(
-          `Error response from ${url}: ${JSON.stringify(data)}`,
-          status,
-        );
-      } else if (error.request) {
-        this.logger.error(`No response received from ${url}`);
-        throw new HttpException(
-          `No response from ${url}: ${error.message}`,
-          504,
-        );
-      } else {
-        this.logger.error(`Error setting up request: ${error.message}`);
-        throw new HttpException(
-          `Error setting up POST request to ${url}: ${error.message}`,
-          500,
-        );
+        this._handleError(error, url);
       }
+    }
+  }
+
+  async get(url: string, params?: any): Promise<AxiosResponse<any>> {
+    try {
+      this.logger.log(
+        `Sending GET request to ${url} with params: ${JSON.stringify(params)}`,
+      );
+      const response = await firstValueFrom(
+        this.httpService.get(url, { params }),
+      );
+      this.logger.log(
+        `Response received from ${url}: ${JSON.stringify(response.data)}`,
+      );
+      return response.data;
+    } catch (error) {
+      this._handleError(error, url);
+    }
+  }
+
+  private _handleError(error: any, url: string): never {
+    this.logger.error(`Failed request to ${url}: ${error.message}`);
+
+    if (error.response) {
+      const { status, data } = error.response;
+      this.logger.error(
+        `Response error: ${status}, Data: ${JSON.stringify(data)}`,
+      );
+      throw new HttpException(
+        `Error response from ${url}: ${JSON.stringify(data)}`,
+        status,
+      );
+    } else if (error.request) {
+      this.logger.error(`No response received from ${url}`);
+      throw new HttpException(`No response from ${url}: ${error.message}`, 504);
+    } else {
+      this.logger.error(`Error setting up request: ${error.message}`);
+      throw new HttpException(
+        `Error setting up request to ${url}: ${error.message}`,
+        500,
+      );
     }
   }
 }
