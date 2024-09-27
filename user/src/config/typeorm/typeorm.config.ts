@@ -16,7 +16,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       username: this.config.get<string>('POSTGRES_USERNAME'),
       password: this.config.get<string>('POSTGRES_PASSWORD'),
       entities: ['dist/**/*.entity.{ts,js}'],
-      migrations: ['dist/migrations/*.{ts,js}'],
+      migrations: ['dist/migration/*.{ts,js}'],
       migrationsTableName: 'typeorm_migrations',
       logger: 'advanced-console',
       logging:
