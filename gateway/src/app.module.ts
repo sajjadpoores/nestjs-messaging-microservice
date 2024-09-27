@@ -4,6 +4,7 @@ import { join } from 'path';
 import { AuthModule } from './modules/auth/auth.module';
 import { RequestModule } from './modules/request/request.module';
 import { UserModule } from './modules/user/user.module';
+import { MessageModule } from './modules/message/message.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { UserModule } from './modules/user/user.module';
     AuthModule,
     RequestModule,
     UserModule,
+    MessageModule,
   ],
   controllers: [],
   providers: [],
