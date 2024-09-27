@@ -5,7 +5,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-export class BaseEntity {
+export class BaseCustomEntity {
   @CreateDateColumn({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP(0)',
@@ -26,7 +26,7 @@ export class BaseEntity {
   deletedAt?: Date;
 
   @Column('bool', {
-    default: false,
+    default: true,
   })
   active: boolean;
 }
