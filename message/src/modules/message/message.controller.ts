@@ -69,7 +69,7 @@ export class MessageController {
     return this.messageService.sendMessage(createMessageDto, files);
   }
 
-  @Get(':sender/:reciever')
+  @Get(':sender/:receiver')
   @ApiOperation({ summary: 'Get paginated list of messages' })
   @ApiResponse({ status: 200, description: 'Messages successfully retrieved.' })
   async getMessages(

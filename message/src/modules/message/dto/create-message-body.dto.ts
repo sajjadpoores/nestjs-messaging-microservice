@@ -10,7 +10,7 @@ export class CreateMessageBodyDto {
   @ApiProperty({ description: 'ID of the receiver', example: 2 })
   @IsNotEmpty()
   @IsNumber()
-  reciever: number;
+  receiver: number;
 
   @ApiProperty({ description: 'Message text', example: 'Hello!' })
   @IsOptional()
