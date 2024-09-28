@@ -1,23 +1,19 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterUserBodyDto } from './dto/register-user-body.dto';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { LoginUserBodyDto } from './dto/login-user.body.dto';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 
 @Controller('auth')
-@ApiTags('Auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
-
-  @Post('register')
-  @ApiOperation({ summary: 'register a new user' })
-  async register(@Body() body: RegisterUserBodyDto) {
-    return this.authService.register(body);
+  @MessagePattern('register_user')
+  async register(@Payload() data: RegisterUserBodyDto) {
+    return this.authService.register(data);
   }
 
-  @Post('login')
-  @ApiOperation({ summary: 'login user' })
-  async login(@Body() body: LoginUserBodyDto) {
+  @MessagePattern('login_user')
+  async login(@Payload() body: LoginUserBodyDto) {
     return this.authService.login(body);
   }
 }

@@ -1,13 +1,10 @@
-import {
-  BadRequestException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { RegisterUserBodyDto } from './dto/register-user-body.dto';
 import { UserRepository } from 'src/shared/repository/user.repository';
 import * as bcrypt from 'bcrypt';
 import { LoginUserBodyDto } from './dto/login-user.body.dto';
 import { JwtService } from '@nestjs/jwt';
+import { RpcException } from '@nestjs/microservices';
 
 @Injectable()
 export class AuthService {
@@ -21,7 +18,11 @@ export class AuthService {
       where: { username: body.username },
     });
     if (existingUser) {
-      throw new BadRequestException('User already exists');
+      throw new RpcException({
+        status: 'error',
+        message: 'User already exists',
+        code: 400,
+      });
     }
 
     const password = await bcrypt.hash(body.password, 10);
@@ -39,19 +40,27 @@ export class AuthService {
       where: { username: body.username },
     });
     if (!user) {
-      throw new UnauthorizedException('Wrong username or password!');
+      throw new RpcException({
+        status: 'error',
+        message: 'Wrong username or password!',
+        code: 401,
+      });
     }
-
     if (await this._validatePassword(body.password, user.password)) {
       const payload = {
         username: user.username,
         id: user.id,
         role: user.role,
       };
-
       return {
         access_token: this.jwtService.sign(payload),
       };
+    } else {
+      throw new RpcException({
+        status: 'error',
+        message: 'Wrong username or password!',
+        code: 401,
+      });
     }
   }
 

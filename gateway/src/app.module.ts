@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { join } from 'path';
 import { AuthModule } from './modules/auth/auth.module';
-import { RequestModule } from './modules/request/request.module';
 import { UserModule } from './modules/user/user.module';
 import { MessageModule } from './modules/message/message.module';
 
@@ -17,7 +16,6 @@ import { MessageModule } from './modules/message/message.module';
       isGlobal: true,
     }),
     AuthModule,
-    RequestModule,
     UserModule,
     MessageModule,
   ],
