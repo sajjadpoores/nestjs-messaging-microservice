@@ -4,9 +4,16 @@ import { join } from 'path';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { MessageModule } from './modules/message/message.module';
+import { JwtModule } from '@nestjs/jwt';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './shared/guard/jwt-auth.guard';
 
 @Module({
   imports: [
+    JwtModule.register({
+      secret: 'secretkey',
+      signOptions: { expiresIn: '1d' },
+    }),
     ConfigModule.forRoot({
       envFilePath: join(
         __dirname,
@@ -20,6 +27,11 @@ import { MessageModule } from './modules/message/message.module';
     MessageModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}
