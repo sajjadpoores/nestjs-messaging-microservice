@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateMessageBodyDto } from './dto/create-message-body.dto';
 import { MessageEntity } from 'src/shared/entity/message.entity';
 import {
@@ -12,6 +12,8 @@ import { FileEntity } from 'src/shared/entity/file.entity';
 import { FileRepository } from 'src/shared/repository/file.repository';
 import { PaginationQueryDto } from 'src/shared/dto/pagination-query.dto';
 import { GetMessagesParamDto } from './dto/get-messages-param.dto';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class MessageService {
@@ -22,7 +24,12 @@ export class MessageService {
 
   async sendMessage(
     createMessageDto: CreateMessageBodyDto,
-    files: Array<Express.Multer.File>,
+    files: Array<{
+      originalname: string;
+      mimetype: string;
+      encoding: string;
+      content: string;
+    }>,
   ): Promise<MessageEntity> {
     const { sender, receiver, text } = createMessageDto;
 
@@ -30,7 +37,7 @@ export class MessageService {
     const key = this._generateEncryptionKey(sender, receiver);
     const iv = randomBytes(16);
 
-    let encryptedText = this._encryptMessage(key, iv, text);
+    const encryptedText = this._encryptMessage(key, iv, text);
 
     const message = this.messageRepository.create({
       sender,
@@ -50,7 +57,7 @@ export class MessageService {
   async getChatMessages(
     query: PaginationQueryDto,
     param: GetMessagesParamDto,
-  ): Promise<{ data: MessageEntity[]; total: number }> {
+  ): Promise<{ data: Partial<MessageEntity>[]; total: number }> {
     const { sender, receiver } = param;
     const { page, limit } = query;
 
@@ -69,9 +76,14 @@ export class MessageService {
         message.sender,
         message.receiver,
       );
+
       return {
-        ...message,
+        id: message.id,
+        sender: message.sender,
+        receiver: message.receiver,
+        createdAt: message.createdAt,
         text: decryptedText,
+        files: message.files,
       };
     });
 
@@ -107,16 +119,49 @@ export class MessageService {
   }
 
   private async _uploadFiles(
-    files: Array<Express.Multer.File>,
+    files: Array<{
+      originalname: string;
+      mimetype: string;
+      encoding: string;
+      content: string;
+    }>,
   ): Promise<FileEntity[]> {
     const fileEntities: FileEntity[] = [];
+    const uploadDir = path.resolve(__dirname, '..', '..', 'uploads');
+
+    // Ensure the upload directory exists, create it if not
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+      console.log(`Created upload directory: ${uploadDir}`);
+    }
 
     for (const file of files) {
-      const fileEntity = this.fileRepository.create({
-        url: file.path,
-      });
-      await this.fileRepository.save(fileEntity);
-      fileEntities.push(fileEntity);
+      const targetPath = path.resolve(
+        __dirname,
+        '..',
+        '..',
+        'uploads',
+        file.originalname,
+      );
+
+      try {
+        // Decode base64 content and save it
+        const fileBuffer = Buffer.from(file.content, 'base64');
+        fs.writeFileSync(targetPath, fileBuffer);
+
+        // Store the file information in the database
+        const fileEntity = this.fileRepository.create({
+          url: targetPath,
+        });
+        await this.fileRepository.save(fileEntity);
+        fileEntities.push(fileEntity);
+      } catch (err) {
+        console.error(
+          `Failed to save file ${file.originalname} to ${targetPath}:`,
+          err,
+        );
+        throw new InternalServerErrorException('Failed to save file');
+      }
     }
 
     return fileEntities;

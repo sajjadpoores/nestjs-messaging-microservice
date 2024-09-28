@@ -1,55 +1,59 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { RequestService } from '../request/request.service';
+import { Inject, Injectable } from '@nestjs/common';
 import { CreateMessageBodyDto } from './dto/create-message-body.dto';
-import * as FormData from 'form-data';
-import * as path from 'path';
 import * as fs from 'fs';
 import { GetMessagesParamsDto } from './dto/get-messages-params.dto';
 import { PaginationQueryDto } from 'src/shared/dto/pagination-query.dto';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class MessageService {
-  constructor(private readonly requestService: RequestService) {}
+  constructor(
+    @Inject('message_mq') private readonly rabbitMqClient: ClientProxy,
+  ) {}
 
   async sendMessage(
     body: CreateMessageBodyDto,
     files: Array<Express.Multer.File>,
   ) {
-    const formData = new FormData();
+    // Encode files as base64
+    const fileData = files.map((file) => {
+      const filePath = file.path;
+      const fileContent = fs.readFileSync(filePath);
+      const fileBase64 = fileContent.toString('base64');
+      return {
+        originalname: file.originalname,
+        mimetype: file.mimetype,
+        encoding: file.encoding,
+        content: fileBase64,
+      };
+    });
 
-    formData.append('sender', body.sender.toString());
-    formData.append('receiver', body.receiver.toString());
-    formData.append('text', body.text);
+    const messageData = {
+      body,
+      files: fileData,
+    };
 
-    if (files && files.length > 0) {
-      for (const file of files) {
-        const filePath = path.resolve(
-          __dirname,
-          '..',
-          '..',
-          'uploads',
-          file.filename,
-        );
-        if (!fs.existsSync(filePath)) {
-          throw new NotFoundException(`File not found: ${filePath}`);
-        }
-        const stream = fs.createReadStream(filePath);
-        formData.append('files', stream, {
-          filename: file.originalname,
-          contentType: file.mimetype,
-        });
+    // Send the message and files via RabbitMQ
+    await this.rabbitMqClient.send('send_message', messageData).toPromise();
+
+    // Remove files after sending the message
+    files.forEach((file) => {
+      try {
+        fs.unlinkSync(file.path);
+        console.log(`File ${file.path} removed from gateway storage.`);
+      } catch (err) {
+        console.error(`Failed to remove file ${file.path}:`, err);
       }
-    }
-    return this.requestService.postFormData(
-      'http://localhost:3003/message/send',
-      formData,
-    );
+    });
+
+    return { success: true };
   }
 
   async getMessages(query: PaginationQueryDto, params: GetMessagesParamsDto) {
-    return this.requestService.get(
-      `http://localhost:3003/message/${params.sender}/${params.receiver}`,
+    const messageData = {
       query,
-    );
+      params,
+    };
+    return this.rabbitMqClient.send('get_messages', messageData);
   }
 }
