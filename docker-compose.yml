@@ -1,0 +1,84 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  gateway:
+    build:
+      context: ./gateway
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      RABBITMQ_URL: amqp://rabbitmq:5672
+    ports:
+      - "3000:3000"
+    depends_on:
+      - rabbitmq
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  message:
+    build:
+      context: ./message
+    environment:
+      RABBITMQ_URL: amqp://rabbitmq:5672
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: message
+      POSTGRES_USERNAME: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "3001:3000"
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  user:
+    build:
+      context: ./user
+    environment:
+      RABBITMQ_URL: amqp://rabbitmq:5672
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: user
+      POSTGRES_USERNAME: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "3002:3000"
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - app-network
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
