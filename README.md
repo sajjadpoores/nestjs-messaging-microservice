@@ -35,8 +35,8 @@ This will start:
 - PostgreSQL on port 5432
 - RabbitMQ on ports 5672 (AMQP) and 15672 (Management UI)
 - gateway service on port 3000
-- message service on port 3001
-- user service on port 3002
+- message service
+- user service
 
 3. Access RabbitMQ Management UI:
 - Open a browser and navigate to http://localhost:15672.
