@@ -1,22 +1,21 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ConfigService } from '@nestjs/config';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-
-  const config = new DocumentBuilder().setVersion('1.0').build();
-
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
-
-  const configService = app.get(ConfigService);
-  const port = configService.get<string>('PORT');
-  const host = configService.get<string>('HOST');
-
-  await app.listen(port, host, () => {
-    console.log(`Server is Running on ${host}:${port} ...`);
-  });
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
+    AppModule,
+    {
+      transport: Transport.RMQ,
+      options: {
+        urls: ['amqp://localhost:5672'],
+        queue: 'user_queue',
+        queueOptions: {
+          durable: false,
+        },
+      },
+    },
+  );
+  await app.listen();
 }
 bootstrap();
