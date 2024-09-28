@@ -12,6 +12,7 @@ export class MessageService {
   ) {}
 
   async sendMessage(
+    sender: number,
     body: CreateMessageBodyDto,
     files: Array<Express.Multer.File>,
   ) {
@@ -29,7 +30,10 @@ export class MessageService {
     });
 
     const messageData = {
-      body,
+      body: {
+        ...body,
+        sender,
+      },
       files: fileData,
     };
 
@@ -49,10 +53,17 @@ export class MessageService {
     return { success: true };
   }
 
-  async getMessages(query: PaginationQueryDto, params: GetMessagesParamsDto) {
+  async getMessages(
+    sender: number,
+    query: PaginationQueryDto,
+    params: GetMessagesParamsDto,
+  ) {
     const messageData = {
       query,
-      params,
+      params: {
+        ...params,
+        sender,
+      },
     };
     return this.rabbitMqClient.send('get_messages', messageData);
   }
