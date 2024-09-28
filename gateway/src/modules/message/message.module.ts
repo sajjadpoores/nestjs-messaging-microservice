@@ -1,10 +1,24 @@
 import { Module } from '@nestjs/common';
 import { MessageController } from './message.controller';
-import { RequestModule } from '../request/request.module';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { MessageService } from './message.service';
 
 @Module({
-  imports: [RequestModule],
+  imports: [
+    ClientsModule.register([
+      {
+        name: 'message_mq',
+        transport: Transport.RMQ,
+        options: {
+          urls: ['amqp://localhost:5672'],
+          queue: 'message_queue',
+          queueOptions: {
+            durable: false,
+          },
+        },
+      },
+    ]),
+  ],
   controllers: [MessageController],
   providers: [MessageService],
 })
