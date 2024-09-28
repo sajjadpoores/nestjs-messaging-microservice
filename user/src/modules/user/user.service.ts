@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { UserRepository } from 'src/shared/repository/user.repository';
 import { UpdateUserBodyDto } from './dto/update-user-body.dto';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { QueryFailedError } from 'typeorm';
 
 @Injectable()

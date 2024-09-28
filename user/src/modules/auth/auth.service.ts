@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { RegisterUserBodyDto } from './dto/register-user-body.dto';
 import { UserRepository } from 'src/shared/repository/user.repository';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { LoginUserBodyDto } from './dto/login-user.body.dto';
 import { JwtService } from '@nestjs/jwt';
 import { RpcException } from '@nestjs/microservices';

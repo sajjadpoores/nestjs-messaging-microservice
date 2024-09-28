@@ -15,6 +15,7 @@ export class AuthService {
       this.rabbitMqClient.send('register_user', body).pipe(
         catchError((err) => {
           const { message, code } = err;
+          console.log(err);
           throw new HttpException(
             message || 'User registration failed',
             code || HttpStatus.BAD_REQUEST,

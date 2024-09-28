@@ -10,7 +10,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         name: 'auth_mq',
         transport: Transport.RMQ,
         options: {
-          urls: ['amqp://localhost:5672'],
+          urls: [process.env.RABBITMQ_URL],
           queue: 'user_queue',
           queueOptions: {
             durable: false,
@@ -22,4 +22,8 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
   controllers: [AuthController],
   providers: [AuthService],
 })
-export class AuthModule {}
+export class AuthModule {
+  constructor() {
+    console.log('process.env.RABBITMQ_URL');
+  }
+}
