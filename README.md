@@ -119,3 +119,9 @@ Here are some potential enhancements and tasks for the next release of the messa
 3. **CI/CD Integration**:
 - Set up continuous integration using GitHub Actions or CircleCI.
 - Implement automated tests in the CI pipeline.
+
+4. **Notifications**:
+- Add notification functionality to alert users when they receive new messages or friend requests.
+
+5. **Response DTO for Gateway**:
+- Implement response DTOs in the gateway service to standardize API responses across microservices.
