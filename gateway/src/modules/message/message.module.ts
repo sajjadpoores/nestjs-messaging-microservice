@@ -1,23 +1,25 @@
 import { Module } from '@nestjs/common';
 import { MessageController } from './message.controller';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ClientsModule } from '@nestjs/microservices';
 import { MessageService } from './message.service';
+import { ConfigService } from '@nestjs/config';
+import { RabbitMqClientService } from 'src/config/rabbitmq-client.config';
 
 @Module({
   imports: [
-    ClientsModule.register([
-      {
-        name: 'message_mq',
-        transport: Transport.RMQ,
-        options: {
-          urls: [process.env.RABBITMQ_URL],
-          queue: 'message_queue',
-          queueOptions: {
-            durable: false,
-          },
+    ClientsModule.registerAsync({
+      clients: [
+        {
+          useFactory: async (configService: ConfigService) =>
+            new RabbitMqClientService(
+              configService,
+              'message_queue',
+            ).createClientOptions(),
+          inject: [ConfigService],
+          name: 'message_mq',
         },
-      },
-    ]),
+      ],
+    }),
   ],
   controllers: [MessageController],
   providers: [MessageService],
