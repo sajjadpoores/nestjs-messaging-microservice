@@ -1,29 +1,31 @@
 import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ClientsModule } from '@nestjs/microservices';
+import { RabbitMqClientService } from 'src/config/rabbitmq-client.config';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    ClientsModule.register([
-      {
-        name: 'auth_mq',
-        transport: Transport.RMQ,
-        options: {
-          urls: [process.env.RABBITMQ_URL],
-          queue: 'user_queue',
-          queueOptions: {
-            durable: false,
-          },
+    ClientsModule.registerAsync({
+      clients: [
+        {
+          useFactory: async (configService: ConfigService) =>
+            new RabbitMqClientService(
+              configService,
+              'user_queue',
+            ).createClientOptions(),
+          inject: [ConfigService],
+          name: 'auth_mq',
         },
-      },
-    ]),
+      ],
+    }),
   ],
   controllers: [AuthController],
   providers: [AuthService],
 })
 export class AuthModule {
   constructor() {
-    console.log('process.env.RABBITMQ_URL');
+    console.log('Here');
   }
 }
